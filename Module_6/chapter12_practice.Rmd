@@ -1,0 +1,102 @@
+---
+title: "Chapter 12 practice"
+author: "Kaelyn Lefferts"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+toc-depth: 2
+number-sections: true
+embed-resourses: true
+toc: true
+---
+
+## Task 0
+```{r, message=FALSE, warning=FALSE}
+library(dslabs)
+library(dplyr)
+```
+
+## Task 1
+Vectorized conditional functions such as ifelse() and case_when() return a new vector with one result for every position 
+
+## Task 2
+```{r}
+?dslabs::heights
+heights <- dslabs::heights
+names(heights)
+```
+**Comment** The column "heights" contains the height values, "Tall" could be assigned to the yes argument if the set up for the function is >68, meaning that if that condition is true, R will output "Tall". 
+
+**Goal** The goal of this task is to create a label for every data entry in the "heights" df as either "Tall" or " Not Tall" based off the condition greater than 68. 
+```{r}
+#height_label <- case_when(heights$height>68,
+                          #yes= "Tall",
+                          #no="Not Tall")
+#table(height_label)
+#length(height_label)
+#nrow(heights)
+```
+**Memo** I'm having trouble formatting this in the way it's laid out in the notes, oh oops I'm supposed to using ifelse() not case_when()
+```{r}
+height_label <- ifelse(test=heights$height>68,
+                       yes= "Tall",
+                       no= "Not Tall")
+table(height_label)
+length(height_label)
+nrow(heights)
+```
+**Comment** Same number of rows for both heights_label and heights which is good, the table() function gave me a count of how many of each value there are, 542 "Tall" and 508 "Not Tall" Checking the length and row count of each piece lets me see that ifelse() did return one label for every row. 
+
+## Task 3
+**Goal** add a new column called mpg_class with high, medium, and low classifications for mpg using mutate() and case_when()
+```{r}
+mpg_recode <- mtcars %>%
+  mutate(mpg_class= case_when(
+    mpg>25 ~ "High MPG",
+    mpg<15 ~ "Low MPG",
+    TRUE ~ "Medium MPG"
+  ))
+table(mpg_recode$mpg_class)
+head(mpg_recode)
+```
+**Comment** expected labels are there, with 6 high MPGs, 5 low MPGs, and 21 medium. mutate() added a column at the end of the data frame titled mpg_class (R made a new column because there wasn't one already titled this), case_when() decided what each value would be based off the conditioned inputted. 
+
+## Task 4
+```{r}
+?dslabs::stars
+stars <- dslabs::stars
+colnames(stars)
+summary(stars$temp)
+```
+**Comment** temperature values should be under "temp" column, because we want a new output column, the name for the column will be to the left of the =. Also the summary is good for seeing which temps should go in which category
+
+**Goal** Create a new column titled "temp_group" that labels temperatures as "cool", "warm" and "hot"
+```{r}
+stars_recode <- stars%>%
+  mutate(temp_group=case_when(
+         temp<4000 ~ "Cool",
+         temp<=7500~ "Warm",
+         TRUE ~ "Hot"))
+table(stars_recode$temp_group)
+head(stars_recode)
+```
+**Comment** I do see expected labels, with 35 cool stars, 38 hot, and 23 warm. Order of temperature matters, if <=7500 was evaluated first, that would match all the currently labeled "cool" and "warm" stars and put them all under one label. Looking at the head of the df, the temps and labels look correct. 
+
+## Task 5
+```{r}
+heights <- dslabs::heights
+head(heights)
+summary(heights$height)
+```
+**Goal** Overwrite the height column in the heights df by converting inches to centimeters
+```{r}
+international_friendly_heights <- heights %>%
+  mutate(height=height*2.54)
+head(international_friendly_heights)
+summary(international_friendly_heights$height)
+```
+**Comment** the code overwrote in existing column because I used an existing column name on the left side of the =, which R will use to mean overwrite. I believe these new values look like cm measurements for height. The only thing that changed is the values in the height column. 
+
+## Task 6
+Looks good! Also pushed to github for fun :)
