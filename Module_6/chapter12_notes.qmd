@@ -1,0 +1,149 @@
+---
+title: "Chapter 12 notes"
+subtitle: "mutate() and case_when()"
+author: "Kaelyn Lefferts"
+date: today
+toc: true
+toc-depth: 2
+number-sections: true
+embed-resourses: true
+format: html
+---
+
+
+# Quarto Notes
+inline code: `{r} expression` 
+```{r}
+library(dplyr)
+num_rows <- mtcars%>%
+  filter(cyl==8)%>%
+  nrow()
+```
+The filtered dataset has `{r}num_rows`
+
+# Load Packages
+
+```{r}
+library(dslabs)
+library(dplyr)
+```
+
+# Vectorized Conditionals
+vectorized conditional functions evaluate conditions element-by-element and across a vector and return a new vector of the same length (different from subsetting which keeps only certain values)
+```{r}
+x <- 1:6
+x>3 #logical vector using indexing
+```
+```{r}
+x[x>3] #logical subsetting
+```
+```{r}
+x[x>3] <- 99 #subassignment using a logical index
+print(x)
+```
+
+## ifelse()
+ifelse(test,yes,no), where test is the logical vector, yes is value to insert when TRUE, no is value to insert when test is FALSE
+```{r}
+x <- c(3,2,3,6,5)
+length(x)
+```
+`x` is a vector with `{r} length(x)` values
+```{r}
+ifelse(test=x>3, yes="Large", no="Small")
+length(ifelse(x>3, "Large", "Small"))
+```
+
+## case_when()
+case_when(conditional1~ value1, condition2~ values2, .default=default_value)
+~ means maps to, or yields
+.default specifies the value to return when no conditions are TRUE, if omitted, case_when() will return NA for those positions
+```{r}
+case_when(c(3,2,3,6,5)>3~"Large", .default= "Small")
+```
+usually clearer once you have 3+ categories 
+
+## More than Two Categories
+```{r}
+scores <- c(55,65,75,85,95)
+```
+
+### Nested ifelse()
+```{r}
+ifelse(scores<60, "Low",
+       ifelse(scores<80, "Medium", "High"))
+```
+Works, but is confusing
+
+### Multiple Rule case_when()
+```{r}
+case_when(scores<60~ "Low",
+          scores<80 ~"Medium",
+          TRUE~ "High")
+```
+Order of rules matters, case_when() uses the first condition that matches
+```{r}
+case_when(scores<80 ~ "Medium",
+          scores<60 ~ "Low",
+          TRUE ~ "High")
+```
+This does not work as intended, any score below 80 is labeled "Medium" before R ever checks the "Low" rule
+
+# mutate()
+
+## Column Copy
+mutate(data, new_col= expression)
+or name_data <- data %>% mutuate(new_col=expression)
+take this df, and add a new column based on these existing columns
+```{r}
+names(mtcars)
+```
+```{r}
+mtcars2 <- mtcars %>%
+  mutate(new_column_copy=am) #identical to am column
+```
+```{r}
+names(mtcars2)
+```
+Created a new column from an existing one
+
+### mutate() with Arithmetic
+```{r}
+measurements <- data.frame(height_in=c(60,65,70))
+print(measurements)
+```
+The `measurements` data frame has one column: `{r}colnames(measurements)`.
+```{r}
+measurements %>%
+  mutate(height_cm=height_in*2.54)
+```
+Cool
+
+### case_when() inside mutate()
+```{r}
+student_scores <- data.frame(scores=c(55,68,72,83,91))
+student_scores <- student_scores %>%
+  mutate(score_level=case_when(
+    scores<60 ~ "Low",
+    scores<80 ~ "Medium",
+    TRUE ~ "High"
+  ))
+head(student_scores)
+```
+`student_scores` has the columns `{r} paste(names(student_scores), collapse = " and ")
+Should render as the column names with an "and" in between
+
+## Overwrite Column Values
+```{r}
+unique(mtcars$am)
+```
+```{r}
+cars_overwrite <- mtcars %>%
+  mutate(am=case_when(
+    am==0 ~ "Automatic",
+    TRUE ~ "Manual"
+  ))
+unique(cars_overwrite$am)
+```
+am column in cars_overwrite has been changes from 0/1 to "Automatic"/"Manual"
+left side of = named the output column, right side of = created its values, if left side is a new name, R adds a column, if left side is an existing name, R overwrites that column
